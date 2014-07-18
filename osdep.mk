@@ -3,8 +3,8 @@ ifneq ($(uname_S),Darwin)
     MATH_LINKER=-lm
 endif
 
-# SunOS / Solaris / Illumos
-ifeq ($(uname_S),SunOS)
+# Solaris / Illumos
+ifeq ($(uname_S),Solaris)
     PREFIX?=/opt/local
 endif
 
