@@ -1,5 +1,5 @@
 CFLAGS=-Wall -Werror -g3 -O2 -Wstrict-aliasing=2
-uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
+uname_S := $(shell sh -c 'uname -o 2>/dev/null || echo not')
 ifndef CC
 	CC = gcc
 endif
@@ -8,11 +8,7 @@ SOVERSION=0
 BUILD_DIR=$(shell pwd)/build/
 LIB_DIR=$(BUILD_DIR)lib/
 BIN_DIR=$(BUILD_DIR)bin/
-ifeq ($(uname_S),SunOS)
-	PREFIX?=/opt/local
-else
-	PREFIX?=/usr/local
-endif
+PREFIX?=/usr/local
 INSTALL_LIB=$(PREFIX)/lib/
 INSTALL_BIN=$(PREFIX)/bin/
 INSTALL_INCLUDE=$(PREFIX)/include/
@@ -27,11 +23,10 @@ ERL_ODB_INSTALL_DIR=$(ERL_DIR)/lib/olegdb-$(VERSION)
 INCLUDES=-I./include
 
 MATH_LINKER=
-ifeq ($(uname_S),Darwin)
-	# Do nothing
-else
-	MATH_LINKER=-lm
-endif
+OUT_LIBRARY=liboleg.so
+EXTRAFLAGS=-fPIC
+
+include osdep.mk
 
 all: liboleg oleg_test server
 
@@ -44,7 +39,7 @@ port_driver.o: ./c_src/port_driver.c
 	$(CC) $(CFLAGS) $(INCLUDES) $(ERLINCLUDES) -c $< -fpic
 
 %.o: ./c_src/%.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c -fPIC $<
+	$(CC) $(CFLAGS) $(INCLUDES) -c $(EXTRAFLAGS) $<
 
 FORCE:
 
@@ -60,7 +55,7 @@ $(BIN_DIR)oleg_test: test.o main.o
 
 liboleg: $(LIB_DIR)liboleg.so
 $(LIB_DIR)liboleg.so: murmur3.o oleg.o logging.o aol.o rehash.o file.o utils.o tree.o lz4.o stack.o cursor.o data.o
-	$(CC) $(CFLAGS) $(INCLUDES) -o $(LIB_DIR)liboleg.so $^ -fpic -shared $(MATH_LINKER)
+	$(CC) $(CFLAGS) $(INCLUDES) -o $(LIB_DIR)$(OUT_LIBRARY) $^ -fpic -shared $(MATH_LINKER)
 
 server: $(BIN_DIR)ol_database.beam $(BIN_DIR)ol_http.beam \
 	$(BIN_DIR)ol_parse.beam $(BIN_DIR)ol_util.beam $(BIN_DIR)olegdb.beam \
