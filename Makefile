@@ -53,13 +53,13 @@ oleg_test: liboleg $(BIN_DIR)oleg_test
 $(BIN_DIR)oleg_test: test.o main.o
 	$(CC) $(CFLAGS) $(INCLUDES) -L$(LIB_DIR) -o $(BIN_DIR)oleg_test test.o main.o $(MATH_LINKER) -loleg
 
-liboleg: $(LIB_DIR)liboleg.so
-$(LIB_DIR)liboleg.so: murmur3.o oleg.o logging.o aol.o rehash.o file.o utils.o tree.o lz4.o stack.o cursor.o data.o
+liboleg: $(LIB_DIR)$(OUT_LIBRARY)
+$(LIB_DIR)$(OUT_LIBRARY): murmur3.o oleg.o logging.o aol.o rehash.o file.o utils.o tree.o lz4.o stack.o cursor.o data.o
 	$(CC) $(CFLAGS) $(INCLUDES) -o $(LIB_DIR)$(OUT_LIBRARY) $^ -fpic -shared $(MATH_LINKER)
 
 server: $(BIN_DIR)ol_database.beam $(BIN_DIR)ol_http.beam \
 	$(BIN_DIR)ol_parse.beam $(BIN_DIR)ol_util.beam $(BIN_DIR)olegdb.beam \
-	$(BIN_DIR)ol_route.beam $(LIB_DIR)liboleg.so port_driver.o
+	$(BIN_DIR)ol_route.beam $(LIB_DIR)$(OUT_LIBRARY) port_driver.o
 	$(CC) $(CFLAGS) $(INCLUDES) $(ERLINCLUDES) $(ERLLIBS) -L$(LIB_DIR) -o $(LIB_DIR)libolegserver.so port_driver.o -fpic -shared $(MATH_LINKER) -loleg -lei
 
 uninstall:
@@ -89,9 +89,9 @@ erlinstall: libinstall server
 libinstall: liboleg
 	@mkdir -p $(INSTALL_LIB)
 	@mkdir -p $(INSTALL_INCLUDE)
-	install $(LIB_DIR)liboleg.so $(INSTALL_LIB)liboleg.so.$(VERSION)
-	ln -fs $(INSTALL_LIB)liboleg.so.$(VERSION) $(INSTALL_LIB)liboleg.so
-	ln -fs $(INSTALL_LIB)liboleg.so.$(VERSION) $(INSTALL_LIB)liboleg.so.$(SOVERSION)
+	install $(LIB_DIR)$(OUT_LIBRARY) $(INSTALL_LIB)$(OUT_LIBRARY).$(VERSION)
+	ln -fs $(INSTALL_LIB)$(OUT_LIBRARY).$(VERSION) $(INSTALL_LIB)$(OUT_LIBRARY)
+	ln -fs $(INSTALL_LIB)$(OUT_LIBRARY).$(VERSION) $(INSTALL_LIB)$(OUT_LIBRARY).$(SOVERSION)
 	install ./include/*.h $(INSTALL_INCLUDE)
 
 test: all
